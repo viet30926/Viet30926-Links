@@ -1,0 +1,22 @@
+name = "viet30926-links"
+main = "worker.js"
+compatibility_date = "2024-12-16"
+compatibility_flags = ["nodejs_compat"]
+
+# Bindings for KV Namespace
+[[kv_namespaces]]
+binding = "VIET30926_DB"
+id = "32f00c1de3904289ae5acbc4adb37877"
+preview_id = "32f00c1de3904289ae5acbc4adb37877"
+
+# Environment variables / Secrets
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# Routes (optional - configure if needed)
+# routes = [
+#   { pattern = "links.example.com/*", zone_id = "your_zone_id" }
+# ]

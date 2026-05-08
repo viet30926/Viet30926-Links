@@ -1,0 +1,6 @@
+# Development Environment Variables
+# Copy this file to .dev.vars and fill in your values
+# DO NOT commit .dev.vars to Git
+
+# Your API Key for authentication
+API_KEY=dev-secret-key-change-this-in-production

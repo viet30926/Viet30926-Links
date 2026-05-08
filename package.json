@@ -1,0 +1,33 @@
+{
+  "name": "viet30926-links",
+  "version": "1.0.0",
+  "description": "Modern URL Shortener System powered by Cloudflare Workers",
+  "main": "worker.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:prod": "wrangler deploy --env production",
+    "logs": "wrangler tail",
+    "logs:prod": "wrangler tail --env production",
+    "kv:list": "wrangler kv:namespace list",
+    "kv:create": "wrangler kv:namespace create VIET30926_DB",
+    "kv:create:preview": "wrangler kv:namespace create VIET30926_DB --preview",
+    "secret:set": "wrangler secret put API_KEY",
+    "secret:list": "wrangler secret list"
+  },
+  "keywords": [
+    "url-shortener",
+    "cloudflare-workers",
+    "edge",
+    "serverless"
+  ],
+  "author": "Viet30926",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.50.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
