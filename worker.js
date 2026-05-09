@@ -290,6 +290,88 @@ function generateDashboard() {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
         }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .tab-btn {
+            padding: 12px 20px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-btn:hover {
+            color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .links-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        .links-table thead {
+            background: #f5f9ff;
+        }
+        
+        .links-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .links-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #666;
+            font-size: 13px;
+            word-break: break-word;
+        }
+        
+        .links-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .links-table code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            color: #667eea;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
@@ -300,12 +382,18 @@ function generateDashboard() {
             <div class="subtitle">Make your URLs shorter, smarter & faster</div>
         </div>
         
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('create')">Create Link</button>
+            <button class="tab-btn" onclick="switchTab('view')">View Links</button>
+        </div>
+        
         <div class="error-message" id="errorMessage"></div>
         <div class="success-message" id="successMessage"></div>
         <div class="loading" id="loadingIndicator">
             <span class="spinner"></span>Processing...
         </div>
         
+        <div class="tab-content active" id="createTab">
         <form id="shortenForm">
             <div class="form-group">
                 <label for="longUrl">Long URL *</label>
@@ -337,6 +425,13 @@ function generateDashboard() {
             <p>2. (Optional) Create a custom slug</p>
             <p>3. Click "Shorten URL"</p>
             <p><strong>TTL:</strong> Links expire after 30 days</p>
+        </div>
+        </div>
+        
+        <div class="tab-content" id="viewTab">
+            <div id="linksContainer">
+                <div class="empty-message">Loading links...</div>
+            </div>
         </div>
     </div>
     
@@ -420,6 +515,52 @@ function generateDashboard() {
                     btn.classList.remove('copied');
                 }, 2000);
             });
+        }
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.getElementById('createTab').classList.remove('active');
+            document.getElementById('viewTab').classList.remove('active');
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Load links if viewing
+            if (tabName === 'view') {
+                loadLinks();
+            }
+        }
+        
+        async function loadLinks() {
+            const container = document.getElementById('linksContainer');
+            container.innerHTML = '<div class="empty-message">Loading links...</div>';
+            
+            try {
+                const response = await fetch('/api/links');
+                const data = await response.json();
+                
+                if (!response.ok || !data.links || data.links.length === 0) {
+                    container.innerHTML = '<div class="empty-message">No links created yet</div>';
+                    return;
+                }
+                
+                let html = '<table class="links-table"><thead><tr><th>Slug</th><th>Original URL</th></tr></thead><tbody>';
+                data.links.forEach(link => {
+                    html += `<tr><td><code>${link.slug}</code></td><td>${link.url}</td></tr>`;
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = '<div class="empty-message">Error loading links: ' + error.message + '</div>';
+            }
         }
     </script>
 </body>
@@ -538,6 +679,48 @@ export default {
     const pathname = url.pathname;
     
     try {
+      // Route: GET /api/links - List all links (Public)
+      if (pathname === '/api/links' && request.method === 'GET') {
+        console.log('[LOG] List links request received');
+        
+        try {
+          // Get list of all keys from KV
+          const listResult = await env.VIET30926_DB.list();
+          const links = [];
+          
+          // Fetch the actual URLs for each slug
+          for (const key of listResult.keys) {
+            const url = await env.VIET30926_DB.get(key.name);
+            if (url) {
+              links.push({
+                slug: key.name,
+                url: url
+              });
+            }
+          }
+          
+          console.log('[LOG] Retrieved', links.length, 'links');
+          
+          return new Response(
+            JSON.stringify({
+              total: links.length,
+              links: links,
+              timestamp: new Date().toISOString()
+            }),
+            { 
+              status: 200, 
+              headers: { 'Content-Type': 'application/json' }
+            }
+          );
+        } catch (e) {
+          console.log('[ERROR] Failed to retrieve links from KV:', e.message);
+          return new Response(
+            JSON.stringify({ error: 'Failed to retrieve links', links: [] }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+      
       // Route: GET /api/stats - System Statistics (Public)
       if (pathname === '/api/stats' && request.method === 'GET') {
         console.log('[LOG] Stats request received');
