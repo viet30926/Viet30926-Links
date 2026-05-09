@@ -383,8 +383,8 @@ function generateDashboard() {
         </div>
         
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('create')">Create Link</button>
-            <button class="tab-btn" onclick="switchTab('view')">View Links</button>
+            <button class="tab-btn active" onclick="switchTab('create')">Tạo link</button>
+            <button class="tab-btn" onclick="switchTab('view')">Xem links</button>
         </div>
         
         <div class="error-message" id="errorMessage"></div>
@@ -396,41 +396,41 @@ function generateDashboard() {
         <div class="tab-content active" id="createTab">
         <form id="shortenForm">
             <div class="form-group">
-                <label for="longUrl">Long URL *</label>
-                <input type="url" id="longUrl" placeholder="https://example.com/very/long/path" required>
+                <label for="longUrl">URL dài *</label>
+                <input type="url" id="longUrl" placeholder="https://example.com/duong/dan/rat/dai" required>
             </div>
             
             <div class="form-group">
-                <label for="customSlug">Custom Slug (optional)</label>
-                <input type="text" id="customSlug" placeholder="e.g., my-link">
+                <label for="customSlug">Slug tùy chỉnh (tùy chọn)</label>
+                <input type="text" id="customSlug" placeholder="ví dụ: my-link">
                 <small style="color: #999; font-size: 12px; margin-top: 5px; display: block;">
-                    Only letters, numbers, hyphens and underscores (max 20 chars)
+                    Chỉ chữ cái, số, gạch nối và dấu gạch dưới (tối đa 20 ký tự)
                 </small>
             </div>
             
             <div class="button-group">
-                <button type="submit" class="btn-primary">Shorten URL</button>
+                <button type="submit" class="btn-primary">Rút gọn URL</button>
             </div>
         </form>
         
         <div class="result-container" id="resultContainer">
-            <div class="result-label">Your shortened link:</div>
+            <div class="result-label">Link rút gọn của bạn:</div>
             <div class="result-text" id="resultLink"></div>
-            <button type="button" class="copy-btn" onclick="copyToClipboard()">Copy Link</button>
+            <button type="button" class="copy-btn" onclick="copyToClipboard()">Sao chép link</button>
         </div>
         
         <div class="info-section">
-            <p><strong>ℹ️ How to use:</strong></p>
-            <p>1. Enter the long URL you want to shorten</p>
-            <p>2. (Optional) Create a custom slug</p>
-            <p>3. Click "Shorten URL"</p>
-            <p><strong>TTL:</strong> Links expire after 30 days</p>
+            <p><strong>ℹ️ Cách sử dụng:</strong></p>
+            <p>1. Nhập URL dài mà bạn muốn rút gọn</p>
+            <p>2. (Tùy chọn) Tạo slug tùy chỉnh</p>
+            <p>3. Nhấp "Rút gọn URL"</p>
+            <p><strong>TTL:</strong> Links hết hạn sau 30 ngày</p>
         </div>
         </div>
         
         <div class="tab-content" id="viewTab">
             <div id="linksContainer">
-                <div class="empty-message">Loading links...</div>
+                <div class="empty-message">Đang tải links...</div>
             </div>
         </div>
     </div>
@@ -470,7 +470,7 @@ function generateDashboard() {
             const slug = document.getElementById('customSlug').value.trim();
             
             if (!url) {
-                showError('Please fill in the URL');
+                showError('Vui lòng nhập URL');
                 return;
             }
             
@@ -491,16 +491,16 @@ function generateDashboard() {
                 const data = await response.json();
                 
                 if (!response.ok) {
-                    showError(data.error || 'Failed to shorten URL');
+                    showError(data.error || 'Không thể rút gọn URL');
                     return;
                 }
                 
                 resultLink.textContent = data.shortUrl;
                 resultContainer.classList.add('show');
-                showSuccess('✓ URL shortened successfully!');
+                showSuccess('✓ URL đã được rút gọn thành công!');
                 form.reset();
             } catch (error) {
-                showError('Error: ' + error.message);
+                showError('Lỗi: ' + error.message);
             }
         });
         
@@ -508,10 +508,10 @@ function generateDashboard() {
             const text = resultLink.textContent;
             navigator.clipboard.writeText(text).then(() => {
                 const btn = event.target;
-                btn.textContent = '✓ Copied!';
+                btn.textContent = '✓ Đã sao chép!';
                 btn.classList.add('copied');
                 setTimeout(() => {
-                    btn.textContent = 'Copy Link';
+                    btn.textContent = 'Sao chép link';
                     btn.classList.remove('copied');
                 }, 2000);
             });
@@ -541,25 +541,25 @@ function generateDashboard() {
         
         async function loadLinks() {
             const container = document.getElementById('linksContainer');
-            container.innerHTML = '<div class="empty-message">Loading links...</div>';
+            container.innerHTML = '<div class="empty-message">Đang tải links...</div>';
             
             try {
                 const response = await fetch('/api/links');
                 const data = await response.json();
                 
                 if (!response.ok || !data.links || data.links.length === 0) {
-                    container.innerHTML = '<div class="empty-message">No links created yet</div>';
+                    container.innerHTML = '<div class="empty-message">Chưa tạo link nào</div>';
                     return;
                 }
                 
-                let html = '<table class="links-table"><thead><tr><th>Slug</th><th>Original URL</th></tr></thead><tbody>';
+                let html = '<table class="links-table"><thead><tr><th>Slug</th><th>URL gốc</th></tr></thead><tbody>';
                 data.links.forEach(link => {
                     html += `<tr><td><code>${link.slug}</code></td><td>${link.url}</td></tr>`;
                 });
                 html += '</tbody></table>';
                 container.innerHTML = html;
             } catch (error) {
-                container.innerHTML = '<div class="empty-message">Error loading links: ' + error.message + '</div>';
+                container.innerHTML = '<div class="empty-message">Lỗi tải links: ' + error.message + '</div>';
             }
         }
     </script>
@@ -658,14 +658,14 @@ function generate404() {
     <div class="container">
         <div class="emoji">😕</div>
         <div class="error-code">404</div>
-        <div class="error-title">Link Not Found</div>
+        <div class="error-title">Link không tìm thấy</div>
         <div class="error-message">
-            The shortened link you're looking for doesn't exist or has expired.
-            <br>Links expire after 30 days.
+            Link rút gọn bạn đang tìm không tồn tại hoặc đã hết hạn.
+            <br>Links hết hạn sau 30 ngày.
         </div>
-        <a href="/" class="button">Back to Dashboard</a>
+        <a href="/" class="button">Quay lại Bảng điều khiển</a>
         <div class="brand">
-            Powered by Viet30926Links 🚀
+            Được cung cấp bởi Viet30926Links 🚀
         </div>
     </div>
 </body>
