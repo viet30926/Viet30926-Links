@@ -2,11 +2,10 @@
  * Viet30926Links - Cloudflare Workers URL Shortener
  * Custom Domain: links.viet30926.qzz.io
  * Optimized for Edge Performance & Enhanced Security
+ * Links Storage: Permanent (No Expiration)
  */
 
 const CUSTOM_DOMAIN = 'links.viet30926.qzz.io';
-const DEFAULT_EXPIRATION_DAYS = 30;
-const EXPIRATION_TTL = DEFAULT_EXPIRATION_DAYS * 24 * 60 * 60;
 const RATE_LIMIT_REQUESTS = 50;
 const RATE_LIMIT_WINDOW = 3600; // 1 hour
 
@@ -131,7 +130,7 @@ function generateDashboard() {
             <p>2. Nhập URL dài mà bạn muốn rút gọn</p>
             <p>3. (Tùy chọn) Tạo slug tùy chỉnh</p>
             <p>4. Nhấp "Rút gọn URL"</p>
-            <p><strong>TTL:</strong> Links hết hạn sau 30 ngày</p>
+            <p><strong>Lưu trữ:</strong> Links được lưu vĩnh viễn</p>
             <p><strong>Rate Limit:</strong> 50 requests/giờ</p>
         </div>
     </div>
@@ -240,8 +239,8 @@ function generate404() {
         <div class="error-code">404</div>
         <div class="error-title">Link không tìm thấy</div>
         <div class="error-message">
-            Link rút gọn bạn đang tìm không tồn tại hoặc đã hết hạn.<br>
-            Links hết hạn sau 30 ngày.
+            Link rút gọn bạn đang tìm không tồn tại.<br>
+            Vui lòng kiểm tra lại slug.
         </div>
         <a href="/" class="button">Quay lại Dashboard</a>
         <div class="brand">Viet30926Links 🚀</div>
@@ -354,9 +353,7 @@ export default {
             clicks: 0
           });
           
-          await env.VIET30926_DB.put(slug, linkData, {
-            expirationTtl: EXPIRATION_TTL
-          });
+          await env.VIET30926_DB.put(slug, linkData);
           
           const shortUrl = `https://${CUSTOM_DOMAIN}/${slug}`;
           
@@ -365,7 +362,7 @@ export default {
               slug,
               shortUrl,
               originalUrl: longUrl,
-              expiresIn: `${DEFAULT_EXPIRATION_DAYS} days`,
+              permanent: true,
               createdAt: new Date().toISOString()
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -389,7 +386,7 @@ export default {
               total_links: totalLinks,
               system_status: 'active',
               domain: CUSTOM_DOMAIN,
-              expiration_days: DEFAULT_EXPIRATION_DAYS,
+              storage: 'permanent',
               timestamp: new Date().toISOString()
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
@@ -462,9 +459,7 @@ export default {
                   created: linkData.created || new Date().toISOString(),
                   clicks: (linkData.clicks || 0) + 1
                 });
-                await env.VIET30926_DB.put(slug, updated, {
-                  expirationTtl: EXPIRATION_TTL
-                });
+                await env.VIET30926_DB.put(slug, updated);
               } catch (e) {
                 // Silently fail click tracking
               }
