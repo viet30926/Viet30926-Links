@@ -6,8 +6,8 @@ compatibility_flags = ["nodejs_compat"]
 # Bindings for KV Namespace
 [[kv_namespaces]]
 binding = "VIET30926_DB"
-id = "32f00c1de3904289ae5acbc4adb37877"
-preview_id = "32f00c1de3904289ae5acbc4adb37877"
+id = "a90825ff4e38496fa7ae1765a1720b2d"
+preview_id = "a90825ff4e38496fa7ae1765a1720b2d"
 
 # Environment variables / Secrets
 [env.production]
